@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG, "onCreate()");
         setContentView(R.layout.activity_main);
 
         // Initialize the CameraUtils object
@@ -51,12 +52,18 @@ public class MainActivity extends AppCompatActivity {
                 // Do nothing
             }
 
-            @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                // Configure the camera parameters
-                Camera.Parameters parameters = mCamera.getParameters();
-                mCameraUtils.configureCameraParameters(parameters, width, height);
-                mCamera.setParameters(parameters);
+                if (mCamera != null) {
+                    // Configure the camera parameters
+                    Camera.Parameters parameters = mCamera.getParameters();
+                    Log.e(TAG, "mCamera.getParameters()" + mCamera.getParameters());
+                    mCameraUtils.configureCameraParameters(parameters, width, height);
+
+                    mCamera.setDisplayOrientation(180);
+
+
+                    mCamera.setParameters(parameters);
+                }
             }
 
             @Override
@@ -68,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        Log.e(TAG, "onResume()");
         super.onResume();
 
         // Open the camera
@@ -91,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.e(TAG, "onPause()");
 
         // Release the camera
         mCamera.stopPreview();

@@ -34,7 +34,7 @@ public class CameraUtils {
     public void releaseCamera() {
         if (mCamera != null) {
             mCamera.release();
-            mCamera = null;
+           // mCamera = null;
         }
     }
 
