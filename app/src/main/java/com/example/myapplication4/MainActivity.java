@@ -3,24 +3,11 @@ package com.example.myapplication4;
 import android.hardware.Camera;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.myapplication4.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
 
 import java.io.IOException;
 
@@ -29,49 +16,65 @@ public class MainActivity extends AppCompatActivity {
 
     private CameraUtils mCameraUtils;
     private Camera mCamera;
-    private SurfaceView mPreview;
+    private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e(TAG, "onCreate()");
+
+
         setContentView(R.layout.activity_main);
 
         // Initialize the CameraUtils object
         mCameraUtils = new CameraUtils();
 
         // Find the SurfaceView for displaying the camera preview
-        mPreview = findViewById(R.id.preview);
+        surfaceView = findViewById(R.id.preview);
 
         // Set up the SurfaceHolder for the SurfaceView
-        mHolder = mPreview.getHolder();
+        mHolder = surfaceView.getHolder();
+
+        mCamera = Camera.open();
+        mCamera = mCameraUtils.getCamera();
+
+
         mHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                // Do nothing
+                try {
+                    mCamera.setPreviewDisplay(holder);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                mCamera.startPreview();
             }
 
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                if (mCamera != null) {
-                    // Configure the camera parameters
-                    Camera.Parameters parameters = mCamera.getParameters();
-                    Log.e(TAG, "mCamera.getParameters()" + mCamera.getParameters());
-                    mCameraUtils.configureCameraParameters(parameters, width, height);
-
-                    mCamera.setDisplayOrientation(180);
-
-
-                    mCamera.setParameters(parameters);
+                mCamera.stopPreview();
+                try {
+                    mCamera.setPreviewDisplay(holder);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
+                mCamera.startPreview();
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                // Do nothing
+                mCamera.stopPreview();
+                mCamera.release();
             }
         });
+
+
     }
+
+
+
+
+
 
     @Override
     protected void onResume() {
@@ -95,6 +98,18 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Failed to start camera preview: " + e.getMessage());
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     protected void onPause() {
