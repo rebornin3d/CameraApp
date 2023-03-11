@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG, "onCreate()");
         setContentView(R.layout.activity_main);
 
         // Initialize the CameraUtils object
@@ -59,22 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
                 mCamera.stopPreview();
 
-//                int rotation = getWindowManager().getDefaultDisplay().getRotation();
-//                int degrees = 0;
-//                switch (rotation) {
-//                    case Surface.ROTATION_0:
-//                        degrees = 0;
-//                        break;
-//                    case Surface.ROTATION_90:
-//                        degrees = 90;
-//                        break;
-//                    case Surface.ROTATION_180:
-//                        degrees = 180;
-//                        break;
-//                    case Surface.ROTATION_270:
-//                        degrees = 270;
-//                        break;
-//                }
+//
 
                 mCamera.setDisplayOrientation(90);
                 try {
@@ -97,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.e(TAG, "onResume()");
 
         // Open the camera
         if (mCamera == null) {
@@ -119,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.e(TAG, "onPause()");
 
         // Release the camera
         mCamera.stopPreview();
