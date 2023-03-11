@@ -3,24 +3,12 @@ package com.example.myapplication4;
 import android.hardware.Camera;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.myapplication4.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
 
 import java.io.IOException;
 
@@ -29,8 +17,12 @@ public class MainActivity extends AppCompatActivity {
 
     private CameraUtils mCameraUtils;
     private Camera mCamera;
-    private SurfaceView mPreview;
+    private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
+
+//    int rotation = getWindowManager().getDefaultDisplay().getRotation();
+//
+//    int degrees = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +33,21 @@ public class MainActivity extends AppCompatActivity {
         mCameraUtils = new CameraUtils();
 
         // Find the SurfaceView for displaying the camera preview
-        mPreview = findViewById(R.id.preview);
+        surfaceView = findViewById(R.id.preview);
 
         // Set up the SurfaceHolder for the SurfaceView
-        mHolder = mPreview.getHolder();
+        mHolder = surfaceView.getHolder();
+
+
         mHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                // Do nothing
+                try {
+                    mCamera.setPreviewDisplay(holder);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                mCamera.startPreview();
             }
 
             @Override
@@ -56,7 +55,36 @@ public class MainActivity extends AppCompatActivity {
                 // Configure the camera parameters
                 Camera.Parameters parameters = mCamera.getParameters();
                 mCameraUtils.configureCameraParameters(parameters, width, height);
-                mCamera.setParameters(parameters);
+
+
+                mCamera.stopPreview();
+
+//                int rotation = getWindowManager().getDefaultDisplay().getRotation();
+//                int degrees = 0;
+//                switch (rotation) {
+//                    case Surface.ROTATION_0:
+//                        degrees = 0;
+//                        break;
+//                    case Surface.ROTATION_90:
+//                        degrees = 90;
+//                        break;
+//                    case Surface.ROTATION_180:
+//                        degrees = 180;
+//                        break;
+//                    case Surface.ROTATION_270:
+//                        degrees = 270;
+//                        break;
+//                }
+
+                mCamera.setDisplayOrientation(90);
+                try {
+                    mCamera.setPreviewDisplay(holder);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                mCamera.startPreview();
+
+
             }
 
             @Override
