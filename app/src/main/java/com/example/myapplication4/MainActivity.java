@@ -1,15 +1,21 @@
 package com.example.myapplication4;
 
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -18,6 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera;
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
+    private ImageReader imageReader;
+    private int imageWidth;
+    private int imageHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,11 +78,52 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+
+        // Initialize the ImageReader with the desired frame size and format
+        imageWidth = 640;
+        imageHeight = 480;
+        imageReader = ImageReader.newInstance(imageWidth, imageHeight, ImageFormat.YUV_420_888, 1);
+
+// Set up a handler thread to receive the captured frames
+        HandlerThread handlerThread = new HandlerThread("ImageReader");
+        handlerThread.start();
+        Handler handler = new Handler(handlerThread.getLooper());
+        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                // Obtain the Image object from the ImageReader
+                Image image = reader.acquireLatestImage();
+
+                // Extract the pixel data from the Image object
+                Image.Plane[] planes = image.getPlanes();
+                ByteBuffer bufferY = planes[0].getBuffer();
+                ByteBuffer bufferU = planes[1].getBuffer();
+                ByteBuffer bufferV = planes[2].getBuffer();
+                byte[] dataY = new byte[bufferY.remaining()];
+                byte[] dataU = new byte[bufferU.remaining()];
+                byte[] dataV = new byte[bufferV.remaining()];
+                bufferY.get(dataY);
+                bufferU.get(dataU);
+                bufferV.get(dataV);
+
+                // Process the pixel data here
+                // ...
+
+                // Release the Image object
+                image.close();
+            }
+        }, handler);
+
+
+
+
+
+
+
+
+
+
     }
-
-
-
-
 
 
     @Override
@@ -98,17 +148,6 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Failed to start camera preview: " + e.getMessage());
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     @Override
