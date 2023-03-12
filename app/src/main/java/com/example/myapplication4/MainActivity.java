@@ -25,8 +25,11 @@ public class MainActivity extends AppCompatActivity {
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
     private ImageReader imageReader;
-    private int imageWidth;
-    private int imageHeight;
+
+    private static final int SAMPLE_RATE = 44100; // or any other sampling rate that you are using
+
+    private static final String outputFilePath = "/home/florin/AndroidStudioProjects/CameraApp/app/src/main/res/layout/output.wav"; // replace with the desired output file path
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Initialize the ImageReader with the desired frame size and format
-        imageWidth = 640;
-        imageHeight = 480;
-        imageReader = ImageReader.newInstance(imageWidth, imageHeight, ImageFormat.YUV_420_888, 1);
+        int imageWidth = 640;
+        int imageHeight = 480;
+        ImageReader imageReader = ImageReader.newInstance(imageWidth, imageHeight, ImageFormat.YUV_420_888, 1);
 
 // Set up a handler thread to receive the captured frames
         HandlerThread handlerThread = new HandlerThread("ImageReader");
@@ -106,8 +109,81 @@ public class MainActivity extends AppCompatActivity {
                 bufferU.get(dataU);
                 bufferV.get(dataV);
 
-                // Process the pixel data here
-                // ...
+
+                // Convert the YUV pixel data to a byte array
+                byte[] data = new byte[imageWidth * imageHeight];
+                int i, j, k;
+                for (i = 0, k = 0; i < imageHeight; i++) {
+                    for (j = 0; j < imageWidth; j++, k++) {
+                        int y = dataY[i * imageWidth + j] & 0xff;
+                        int u = dataU[(i / 2) * (imageWidth / 2) + (j / 2)] & 0xff;
+                        int v = dataV[(i / 2) * (imageWidth / 2) + (j / 2)] & 0xff;
+                        int r = (int) (1.164 * (y - 16) + 1.596 * (v - 128));
+                        int g = (int) (1.164 * (y - 16) - 0.392 * (u - 128) - 0.813 * (v - 128));
+                        int b = (int) (1.164 * (y - 16) + 2.017 * (u - 128));
+                        r = Math.min(Math.max(r, 0), 255);
+                        g = Math.min(Math.max(g, 0), 255);
+                        b = Math.min(Math.max(b, 0), 255);
+                        int gray = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+                        data[k] = (byte) gray;
+                    }
+                }
+
+
+
+                // Compute the frequency content of the pixel data using Fourier transforms
+                double[] signal = new double[data.length];
+                for (int m = 0; m < data.length; m++) {
+                    signal[m] = data[m] / 255.0;
+                }
+                double[] spectrum = FourierTransform.fft(signal);
+                double[] freqBins = new double[spectrum.length];
+                double freqBinWidth = 1.0 / (2 * imageWidth);
+                for (int m = 0; m < freqBins.length; m++) {
+                    freqBins[m] = m * freqBinWidth;
+                }
+
+
+
+
+
+
+                // Map the frequency bins to audio frequencies
+                double[] audioFreqs = new double[freqBins.length];
+                for (int m = 0; m < audioFreqs.length; m++) {
+                    audioFreqs[m] = freqBins[m] * SAMPLE_RATE;
+                }
+
+                // Map the spectrum to audio amplitudes
+                double[] audioAmps = new double[spectrum.length];
+                for (int m = 0; m < audioAmps.length; m++) {
+                    audioAmps[m] = Math.sqrt(spectrum[m] * spectrum[m]);
+                }
+
+                // Generate the audio waveform by applying an inverse Fourier transform to the spectrum
+                double[] audioData = FourierTransform.ifft(spectrum);
+
+                // Normalize the audio data and convert it to a byte array
+                double maxAbsValue = 0.0;
+                for (int m = 0; m < audioData.length; m++) {
+                    if (Math.abs(audioData[m]) > maxAbsValue) {
+                        maxAbsValue = Math.abs(audioData[m]);
+                    }
+                }
+                byte[] audioBytes = new byte[audioData.length];
+                for (int m = 0; m < audioData.length; m++) {
+                    audioBytes[m] = (byte) (audioData[m] * 127 / maxAbsValue);
+                }
+
+                // Write the audio data to a WAV file
+                WaveFileWriter.writeWaveFile(outputFilePath, audioBytes, SAMPLE_RATE, 1);
+
+
+
+
+
+
+
 
                 // Release the Image object
                 image.close();
