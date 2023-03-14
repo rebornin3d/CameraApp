@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int SAMPLE_RATE = 11025; // or 8000
     private static final int BUFFER_SIZE = AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
 
+    private static final String AudioProcessingString = "AudioProcessing";
+    private ImageReader mImageReader; // Declare a member variable to store the ImageReader object
+
 
     // private static final int SAMPLE_RATE = 44100; // or any other sampling rate that you are using
     //private static final int BUFFER_SIZE = AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
@@ -49,20 +52,10 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "onCreate()");
         setContentView(R.layout.activity_main);
 
-
-        // Get the camera parameters
-        // Camera.Parameters params = mCamera.setParameters();
-        // System.out.println("params" + params);
-
-        // Get the preview size from the camera parameters
-//        Camera.Size previewSize = params.getPreviewSize();
-//        System.out.println("previewSize" + previewSize);
-
-
         // Get the number of cameras on the device
         int numCameras = Camera.getNumberOfCameras();
 
-        System.out.println("numCameras" + numCameras);
+        System.out.println("numCameras " + numCameras);
 
         // For each camera, get the camera info and print its parameters
         for (int i = 0; i < numCameras; i++) {
@@ -75,16 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
                 // Get the camera parameters
                 Camera.Parameters parameters = camera.getParameters();
-                System.out.println("parameters are " + parameters.flatten());
+                System.out.println("parameters are " + i + "       " + parameters.flatten());
             }
         }
-
-
-//                // Print the camera parameters
-//                Log.d(TAG, "Camera " + i + " parameters:");
-//                Log.d(TAG, "Flash modes: " + parameters.getSupportedFlashModes());
-//                Log.d(TAG, "Picture sizes: " + parameters.getSupportedPictureSizes());
-//                Log.d(TAG, "Preview sizes: " + parameters.getSupportedPreviewSizes());
 
 
         // Initialize the CameraUtils object
@@ -97,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         mHolder = surfaceView.getHolder();
 
         mCamera = Camera.open();
-        System.out.println("Camera.CameraInfo.CAMERA_FACING_BACK" + mCameraUtils.openCamera(Camera.CameraInfo.CAMERA_FACING_BACK));
+        System.out.println("Camera.CameraInfo.CAMERA_FACING_BACK " + mCameraUtils.openCamera(Camera.CameraInfo.CAMERA_FACING_BACK));
         if (mCamera == null) {
             if (!mCameraUtils.openCamera(Camera.CameraInfo.CAMERA_FACING_BACK)) {
                 Log.e(TAG, "Failed to open camera");
@@ -110,9 +96,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Initialize the ImageReader with the desired frame size and format
-        int imageWidth = 3840;
-        int imageHeight = 2160;
+        int imageWidth = 1080;
+        int imageHeight = 2340;
         ImageReader imageReader = ImageReader.newInstance(imageWidth, imageHeight, ImageFormat.YUV_420_888, 1);
+        System.out.println("imageReaderObject    " + imageReader);
 
         // Set up a handler thread to receive the captured frames
         HandlerThread handlerThread = new HandlerThread("ImageReader");
@@ -126,7 +113,9 @@ public class MainActivity extends AppCompatActivity {
                 // Obtain the Image object from the ImageReader
                 Image image = reader.acquireLatestImage();
 
-                Log.d(TAG, "onImageAvailable called");
+                System.out.println("onImageAvailable called " );
+                Log.d(TAG, "Image size: " + image.getWidth() + " x " + image.getHeight());
+
 
 
                 // Extract the pixel data from the Image object
