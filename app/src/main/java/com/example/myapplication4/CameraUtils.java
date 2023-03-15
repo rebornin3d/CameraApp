@@ -12,7 +12,7 @@ import java.util.List;
 public class CameraUtils {
     private static final String TAG = "CameraUtils";
 
-    private Camera mCamera;
+    public static Camera mCamera;
 
     // Open the camera
     public boolean openCamera(int cameraId) {
