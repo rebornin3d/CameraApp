@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
             val uri: Uri? = data.data
             uri?.let { grayscaleImage(it) }
         }
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            val uri: Uri? = data.data
+            uri?.let { grayscaleImage_2(it) }
+        }
     }
 
     private fun grayscaleImage(imageUri: Uri) {
@@ -49,4 +53,34 @@ class MainActivity : AppCompatActivity() {
         canvas.drawBitmap(originalBitmap, 0f, 0f, paint)
         imageView.setImageBitmap(grayscaleBitmap)
     }
+
+
+    private fun grayscaleImage_2(imageUri: Uri) {
+        val inputStream = contentResolver.openInputStream(imageUri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+
+        val width = bitmap.width
+        System.out.println("width : "+ width);
+
+        val height = bitmap.height
+        System.out.println("height : "+ height);
+
+        val pixels = IntArray(width * height)
+        System.out.println("pixels : " + pixels);
+
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        // The `pixels` array now contains the grayscale pixel values of the image
+
+        // TODO: Convert the grayscale pixels to sound signal
+        // You can use the `pixels` array to generate a sound signal based on the grayscale values
+
+        imageView.setImageBitmap(bitmap)
+
+
+        System.out.println("bitmap.getPixels : " +  bitmap.getPixels(pixels, 0, width, 0, 0, width, height));
+    }
 }
+
+
+
